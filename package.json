@@ -1,0 +1,29 @@
+{
+  "name": "tasksw",
+  "version": "0.1.0",
+  "description": "powerful task runner",
+  "main": "src/index.js",
+  "type": "module",
+  "author": "redkiwi-dev",
+  "license": "MIT",
+  "scripts": {
+    "test": "jest",
+    "dev": "npx esbuild index.ts --outdir=src --watch"
+  },
+  "keywords": [
+    "task",
+    "runner",
+    "kiwi"
+  ],
+  "bin": {
+    "tasksw": "./src/index.js"
+  },
+  "devDependencies": {
+    "swc": "^1.0.11",
+    "@types/node": "^20.13.0"
+  },
+  "dependencies": {
+    "commander": "^12.1.0",
+    "ora": "^8.0.1"
+  }
+}
