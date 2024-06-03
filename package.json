@@ -1,15 +1,11 @@
 {
   "name": "tasksw",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "powerful task runner",
   "main": "src/index.js",
   "type": "module",
   "author": "redkiwi-dev",
   "license": "MIT",
-  "scripts": {
-    "test": "jest",
-    "dev": "npx esbuild index.ts --outdir=src --watch"
-  },
   "keywords": [
     "task",
     "runner",

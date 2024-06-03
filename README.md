@@ -24,4 +24,71 @@ To run a task, enter:
 ```sh
 tasksw hello
 ```
-# tasksw
+
+for the full list of commands, enter:
+
+```sh
+taskw --help
+```
+
+## examples
+
+### running normal task
+
+```json
+// tasks.json
+{
+  "hello": "echo \"hello\""
+}
+```
+
+```sh
+tasksw hello
+```
+
+```sh
+# output
+⠋ Executing (hello): echo "hello"
+
+ "hello"
+
+✔ Successfully executed
+```
+
+### running sequental tasks
+
+```json
+// tasks.json
+{
+  "hello": "echo \"hello\" ; echo \"world\""
+}
+```
+
+```sh
+tasksw hello
+```
+
+```sh
+# output
+⠋ Executing (hello): echo "world"
+⠋ Executing (hello): echo "hello"
+
+ "hello"
+✔ Successfully executed
+
+ "world"
+✔ Successfully executed
+```
+
+To ignore `tasksw` messages you could use `--ignore` flag:
+
+```sh
+tasksw hello -i
+```
+
+```sh
+# output
+ "hello"
+
+ "world"
+```
