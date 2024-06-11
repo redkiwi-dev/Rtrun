@@ -1,3 +1,9 @@
+## 1.1.0 - 11/06/2024
+
+- added new command: `init`
+- fixed dependency error
+- fixed command name not displaying properly
+
 ## 1.0.0 - 11/06/2024
 
 - removed sequental tasks

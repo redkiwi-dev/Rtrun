@@ -7,7 +7,6 @@ import { exit } from "process";
 
 program.name("rtrun").description("Powerful task runner").version("1.0.0");
 
-// TODO: add `rtrun init` command, to initialize tasks.json file
 async function getTasks(): Promise<any> {
   return new Promise((resolve, reject) => {
     fs.readFile("./tasks.json", "utf8", (err, data) => {
@@ -38,8 +37,15 @@ const checkCommandAvailability = async (command: string): Promise<boolean> => {
 };
 
 async function executeCommand(command: Task, arg: string) {
-  // TODO: Fix {command} display as [object object]
-  const start = ora(`Executing (${arg}): ${command} \n`);
+  const start = ora(
+    `Executing (${arg}): ${
+      typeof command === "string"
+        ? command
+        : Array.isArray(command)
+        ? command[0]
+        : command.task
+    } \n`
+  );
   start.start();
 
   if (typeof command === "string") {
@@ -152,16 +158,41 @@ async function executeCommand(command: Task, arg: string) {
   }
 }
 
-program.argument("<task>", "run the task").action(async (arg, flags) => {
-  try {
-    const tasks: Task[] = await getTasks();
-    if (!tasks[arg]) {
-      console.log(`invalid task: ${arg}`);
-      return;
+async function initTasks() {
+  const taskData = {
+    hi: 'echo "hi"',
+    hello: {
+      task: 'echo "hello"',
+      silent: false,
+      directory: ".",
+      watch: false,
+      bench: false,
+    },
+  };
+
+  fs.writeFile("./tasks.json", JSON.stringify(taskData, null, 2), (err) => {
+    if (err) {
+      console.error("error creating tasks.json:", err);
+    } else {
+      console.log("tasks.json created successfully.");
     }
-    await executeCommand(tasks[arg], arg);
-  } catch (error) {
-    console.error(error);
+  });
+}
+
+program.argument("<task>", "run the task").action(async (arg) => {
+  if (arg === "init") {
+    initTasks();
+  } else {
+    try {
+      const tasks: Task[] = await getTasks();
+      if (!tasks[arg]) {
+        console.log(`invalid task: ${arg}`);
+        return;
+      }
+      await executeCommand(tasks[arg], arg);
+    } catch (error) {
+      console.error(error);
+    }
   }
 });
 

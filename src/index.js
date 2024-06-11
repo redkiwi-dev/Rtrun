@@ -33,8 +33,10 @@ const checkCommandAvailability = async (command) => {
   });
 };
 async function executeCommand(command, arg) {
-  const start = ora(`Executing (${arg}): ${command} 
-`);
+  const start = ora(
+    `Executing (${arg}): ${typeof command === "string" ? command : Array.isArray(command) ? command[0] : command.task} 
+`
+  );
   start.start();
   if (typeof command === "string") {
     const taskArr = command.split(" ");
@@ -131,16 +133,39 @@ async function executeCommand(command, arg) {
     return;
   }
 }
-program.argument("<task>", "run the task").action(async (arg, flags) => {
-  try {
-    const tasks = await getTasks();
-    if (!tasks[arg]) {
-      console.log(`invalid task: ${arg}`);
-      return;
+async function initTasks() {
+  const taskData = {
+    hi: 'echo "hi"',
+    hello: {
+      task: 'echo "hello"',
+      silent: false,
+      directory: ".",
+      watch: false,
+      bench: false
     }
-    await executeCommand(tasks[arg], arg);
-  } catch (error) {
-    console.error(error);
+  };
+  fs.writeFile("./tasks.json", JSON.stringify(taskData, null, 2), (err) => {
+    if (err) {
+      console.error("error creating tasks.json:", err);
+    } else {
+      console.log("tasks.json created successfully.");
+    }
+  });
+}
+program.argument("<task>", "run the task").action(async (arg) => {
+  if (arg === "init") {
+    initTasks();
+  } else {
+    try {
+      const tasks = await getTasks();
+      if (!tasks[arg]) {
+        console.log(`invalid task: ${arg}`);
+        return;
+      }
+      await executeCommand(tasks[arg], arg);
+    } catch (error) {
+      console.error(error);
+    }
   }
 });
 program.parse();
