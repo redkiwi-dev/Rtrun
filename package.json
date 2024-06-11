@@ -1,6 +1,6 @@
 {
-  "name": "tasksw",
-  "version": "0.2.0",
+  "name": "rtrun",
+  "version": "1.0.0",
   "description": "powerful task runner",
   "main": "src/index.js",
   "type": "module",
@@ -12,13 +12,11 @@
     "kiwi"
   ],
   "bin": {
-    "tasksw": "./src/index.js"
+    "rtrun": "./src/index.js"
   },
   "devDependencies": {
-    "swc": "^1.0.11",
-    "@types/node": "^20.13.0"
-  },
-  "dependencies": {
+    "@types/node": "^20.13.0",
+    "perf_hooks": "^0.0.1",
     "commander": "^12.1.0",
     "ora": "^8.0.1"
   }

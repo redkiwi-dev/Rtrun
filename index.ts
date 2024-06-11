@@ -5,8 +5,9 @@ import ora from "ora";
 import { exec, spawn } from "child_process";
 import { exit } from "process";
 
-program.name("taskw").description("Powerful task runner").version("0.2.0");
+program.name("rtrun").description("Powerful task runner").version("1.0.0");
 
+// TODO: add `rtrun init` command, to initialize tasks.json file
 async function getTasks(): Promise<any> {
   return new Promise((resolve, reject) => {
     fs.readFile("./tasks.json", "utf8", (err, data) => {
@@ -36,82 +37,132 @@ const checkCommandAvailability = async (command: string): Promise<boolean> => {
   });
 };
 
-async function executeCommand(command: string, arg: string, config: Config) {
+async function executeCommand(command: Task, arg: string) {
+  // TODO: Fix {command} display as [object object]
   const start = ora(`Executing (${arg}): ${command} \n`);
-  if (!config.ignore) {
-    start.start();
-  }
-  const taskArr: string[] = command.split(" ");
-  const first: string = taskArr[0];
-  const cmd_args: string[] = taskArr.slice(1);
+  start.start();
 
-  await checkCommandAvailability(first).catch((cmd) => {
-    if (!config.ignore) {
-      start.fail(`command \x1b[31m${first}\x1b[0m not found`);
+  if (typeof command === "string") {
+    const taskArr: string[] = command.split(" ");
+    const first: string = taskArr[0];
+    const cmd_args: string[] = taskArr.slice(1);
+
+    await checkCommandAvailability(first).catch((err) => {
+      start.fail(`command \x1b[31m${first}\x1b[0m not found: \n ${err}`);
       start.stop();
-    }
-    exit(0);
-  });
 
-  const esbuildProcess = spawn(
-    first,
-    cmd_args.filter((a) => a.trim())
-  );
+      exit(0);
+    });
 
-  esbuildProcess.stdout.on("data", (data) => {
-    !config.silent && console.log(config.ignore ? "" : "\n", data.toString());
-  });
+    const esbuildProcess = spawn(
+      first,
+      cmd_args.filter((a) => a.trim())
+    );
+    esbuildProcess.stdout.on("data", (data) => {
+      console.log("\n", data.toString());
+    });
 
-  esbuildProcess.stderr.on("data", (data) => {
-    !config.silent && console.log(config.ignore ? "" : "\n", data.toString());
-  });
+    esbuildProcess.stderr.on("data", (data) => {
+      console.log("\n", data.toString());
+    });
 
-  esbuildProcess.on("close", (code) => {
-    if (code !== 0) {
-      !config.ignore && start.fail("Failed");
-    } else {
-      !config.ignore && start.succeed("Successfully executed");
-    }
-    start.stop();
-  });
-}
-
-interface Config {
-  silent: boolean;
-  ignore: boolean;
-}
-
-program
-  .argument("<task>", "run the task")
-  .option("-s, --silent", "silence output message")
-  .option("-i, --ignore", "ignore tasksw messages")
-  .action(async (arg, flags) => {
-    const config: Config = {
-      silent: !!flags.silent,
-      ignore: !!flags.ignore,
+    esbuildProcess.on("close", (code) => {
+      if (code !== 0) {
+        start.fail("Failed");
+      } else {
+        start.succeed("Successfully executed");
+      }
+      start.stop();
+    });
+  } else if (Array.isArray(command)) {
+    // TODO: add concurrent execution for each item
+    command.forEach((cmd) => executeCommand(cmd, arg));
+  } else if (typeof command === "object" && !!command.task) {
+    const options: TaskOptions = {
+      task: command.task,
+      silent: command.silent || false,
+      directory: command.directory || process.cwd(),
+      watch: command.watch || false,
+      bench: command.bench || false,
+      // condition: command.condition || null,
+      // allowConditions: command.allowConditions || true,
+      // interval: command.interval || null,
     };
 
-    try {
-      const tasks: string[] = await getTasks();
-      if (!tasks[arg]) {
-        console.log(`invalid task: ${arg}`);
-        return;
-      }
+    const taskArr: string[] = options.task.split(" ");
+    const first: string = taskArr[0];
+    const cmd_args: string[] = taskArr.slice(1);
 
-      if (tasks[arg].includes(";")) {
-        const commands = tasks[arg]
-          .split(";")
-          .map((cmd) => cmd.trimEnd().trimStart());
+    await checkCommandAvailability(first).catch((err) => {
+      start.fail(`command \x1b[31m${first}\x1b[0m not found: \n ${err}`);
+      start.stop();
 
-        commands.reverse().forEach(async (cmd) => {
-          await executeCommand(cmd, arg, config);
+      exit(0);
+    });
+
+    function spawnProccesses() {
+      const startTime = performance.now();
+      const esbuildProcess = spawn(
+        first,
+        cmd_args.filter((a) => a.trim()),
+        { cwd: options.directory }
+      );
+
+      if (!options.silent) {
+        esbuildProcess.stdout.on("data", (data) => {
+          console.log("\n", data.toString());
         });
-      } else {
-        await executeCommand(tasks[arg], arg, config);
+
+        esbuildProcess.stderr.on("data", (data) => {
+          console.log("\n", data.toString());
+        });
       }
-    } catch (error) {
-      console.error(error);
+
+      esbuildProcess.on("close", (code) => {
+        const endTime = performance.now();
+        const duration = Math.round(endTime - startTime);
+        options.bench && console.log(`${duration}ms`);
+        console.log(".");
+        if (code !== 0) {
+          start.fail("Failed");
+        } else {
+          start.succeed("Successfully executed");
+        }
+        start.stop();
+      });
     }
-  });
+
+    if (options.watch === true) {
+      const watchDirectory = process.cwd();
+
+      console.log(`Watching ${watchDirectory} for changes...`);
+
+      fs.watch(watchDirectory, { recursive: true }, (eventType, filename) => {
+        console.log(`${filename} was ${eventType}.`);
+        spawnProccesses();
+      }).on("error", (err) => {
+        console.error(`Error watching ${watchDirectory}:`, err);
+      });
+    } else {
+      spawnProccesses();
+    }
+  } else {
+    console.error("invalid task type");
+    return;
+  }
+}
+
+program.argument("<task>", "run the task").action(async (arg, flags) => {
+  try {
+    const tasks: Task[] = await getTasks();
+    if (!tasks[arg]) {
+      console.log(`invalid task: ${arg}`);
+      return;
+    }
+    await executeCommand(tasks[arg], arg);
+  } catch (error) {
+    console.error(error);
+  }
+});
 
 program.parse();

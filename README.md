@@ -1,94 +1,51 @@
-# Tasksw
+# Rtrun
 
-**Tasksw** is a task runner, design to simplify running simple and orchestrated tasks.
+**Rtrun** is a task runner, design to simplify running simple and orchestrated tasks.
 
 ## installation
 
 ```sh
-npm install tasksw -g
+npm install rtrun -g
 ```
 
 ## getting started
 
-After the installation, describe your tasks inside `tasks.json`:
+Locate your tasks inside `tasks.json` file:
 
 ```json
 {
-  "dev": "node dev.js",
-  "hello": "echo \"hello\""
+  "hi": "echo \"hi\"",
+  "hello": {
+    "task": "echo \"hello\"",
+    "silent": false,
+    "directory": ".",
+    "bench": true,
+    "watch": false
+  }
 }
 ```
 
-To run a task, enter:
+And then run `rtrun hi`:
 
 ```sh
-tasksw hello
+⠋ Executing (hi): echo "hi"
+
+ "hi"
+✔ Successfully executed
 ```
 
-for the full list of commands, enter:
-
-```sh
-taskw --help
-```
-
-## examples
-
-### running normal task
+## configuration
 
 ```json
-// tasks.json
 {
-  "hello": "echo \"hello\""
+  "cmd": "echo \"hi\"", // execute the task
+  "acmd": {
+    "task": "echo \"hi\"", // execute the task
+    "silent": false, // display output
+    "directory": ".", // task will be execute in the directory
+    "watch": false, // listen to the changes
+    "bench": false // benchmark the execution time
+  },
+  "bcmd": ["echo \"hi\"", "echo \"hello\""] // TODO: execute commands concurrently 
 }
-```
-
-```sh
-tasksw hello
-```
-
-```sh
-# output
-⠋ Executing (hello): echo "hello"
-
- "hello"
-
-✔ Successfully executed
-```
-
-### running sequental tasks
-
-```json
-// tasks.json
-{
-  "hello": "echo \"hello\" ; echo \"world\""
-}
-```
-
-```sh
-tasksw hello
-```
-
-```sh
-# output
-⠋ Executing (hello): echo "world"
-⠋ Executing (hello): echo "hello"
-
- "hello"
-✔ Successfully executed
-
- "world"
-✔ Successfully executed
-```
-
-To ignore `tasksw` messages you could use `--ignore` flag:
-
-```sh
-tasksw hello -i
-```
-
-```sh
-# output
- "hello"
-
- "world"
 ```
