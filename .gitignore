@@ -1,4 +1,3 @@
 node_modules
-tasks.json
 pnpm-lock.yaml
-test
+test/*

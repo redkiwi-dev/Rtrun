@@ -9,7 +9,6 @@ interface WatchOptions {
 
 interface TaskOptions {
   /// A task to run, or run multiple tasks sequently
-  // TODO: add support for: Task[]
   task: string;
   /// Silence output of the task
   silent?: boolean;
@@ -25,7 +24,7 @@ interface TaskOptions {
   /// Allow task included as an condition by other tasks
   // TODO: allowConditions?: boolean;
   /// Interval after which this task will be re-executed
-  // TODO: interval?: null | number;
+  interval?: null | number;
 }
 
-type Task = string | TaskOptions | Task[];
+type Task = string | TaskOptions;

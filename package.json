@@ -1,20 +1,18 @@
 {
   "name": "rtrun",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "description": "powerful task runner",
   "main": "src/index.js",
   "type": "module",
   "author": "redkiwi-dev",
   "license": "MIT",
-  "keywords": [
-    "task",
-    "runner",
-    "kiwi"
-  ],
   "bin": {
-    "rtrun": "./src/index.js"
+    "rtrun": "./dist/index.js"
   },
   "devDependencies": {
+    "@swc/cli": "^0.3.12",
+    "@swc/core": "^1.5.29",
+    "chokidar": "^3.6.0",
     "@types/node": "^20.13.0"
   },
   "dependencies": {

@@ -66,8 +66,6 @@ async function executeCommand(command, arg) {
       }
       start.stop();
     });
-  } else if (Array.isArray(command)) {
-    command.forEach((cmd) => executeCommand(cmd, arg));
   } else if (typeof command === "object" && !!command.task) {
     let spawnProccesses = function() {
       const startTime = performance.now();

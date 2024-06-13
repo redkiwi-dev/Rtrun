@@ -1,3 +1,9 @@
+## 1.2.0 - 13/06/2024
+
+- added new command: `interval`
+- optimized codebase
+- switched from `esbuild` to `swc`
+
 ## 1.1.0 - 11/06/2024
 
 - added new command: `init`

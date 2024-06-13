@@ -1,0 +1,3 @@
+{
+  "dev": "npx swc src/**/*.ts --out-dir dist --watch"
+}
